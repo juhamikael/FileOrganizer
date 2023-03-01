@@ -104,6 +104,6 @@ This is the first beta release of the application, so please expect some bugs an
 
 
 # 6 Contact: 
-Join my [Discord](https://discord.gg/cxp7EKw53w)
+Join my [Discord channel](https://discord.gg/cxp7EKw53w)
 
 
