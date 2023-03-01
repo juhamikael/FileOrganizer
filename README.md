@@ -64,6 +64,14 @@ Similarly, the part `"Photos": ["jpg", "png", "jpeg", "ico", "jfif", "psd", "gif
 
 # 3 Usage
 
+## NOTE
+When you use the File Organizer application, please note that you may experience a brief freeze that could feel like a crash. This is a result of the backup process, which involves compressing all files into a single zip file before moving them to the correct folders based on your configuration file.
+
+During the backup process, the application zips all files, which can take some time depending on the size of your files. Once the compression is complete, the application moves the zip file to the backup folder and then moves the original files from their original location to the new folders based on your configuration file.
+
+If you encounter any issues or have questions about the backup process, please let me know. 
+
+## Run the program 
 1. Navigate to folder you want to organize  
 ![image](https://user-images.githubusercontent.com/83360104/222024641-f6d2e2d9-6e9e-4514-9052-c9ee0660aea5.png)
 
@@ -77,7 +85,9 @@ At that point the button become enabled
 4. You're done  
 ![image](https://user-images.githubusercontent.com/83360104/222024924-7a08d61c-d8a7-4055-92e9-23fbbbe369db.png)
 
-# 4 Note
+
+
+# 4 Important
 This application is still in developement and therefore there might be bugs.
 You do test this application with you'r own responsibility and therefore I'm not responsible for any lost files
 
@@ -93,6 +103,6 @@ This is the first beta release of the application, so please expect some bugs an
 - Initial beta release of the application 
 
 
-
+Contact: Join my [Discord](https://discord.gg/cxp7EKw53w)
 
 
