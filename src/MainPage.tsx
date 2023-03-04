@@ -42,7 +42,7 @@ function MainPage() {
   }, [fileOrganized]);
 
   async function organizeFiles() {
-    setfileOrganized(await invoke("organize_files", {path: path, is_backup: backUpStatus}));
+    setfileOrganized(await invoke("organize_files", {path: path, isBackup: backUpStatus}));
     setPath("");
   }
 
