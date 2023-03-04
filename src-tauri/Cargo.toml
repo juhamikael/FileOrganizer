@@ -1,0 +1,36 @@
+[package]
+name = "FileOrganizer"
+version = "0.9.0"
+description = "A Tauri App"
+authors = ["Juha Mikael"]
+license = ""
+repository = ""
+edition = "2021"
+rust-version = "1.57"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[build-dependencies]
+tauri-build = { version = "1.2", features = [] }
+
+[dependencies]
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+tauri = { version = "1.2", features = ["fs-read-file", "fs-write-file", "shell-open"] }
+zip = "0.6.4"
+chrono = { version = "0.4", features = ["serde"] }
+open = "3.0.1"
+once_cell = "1.8.0"
+lazy_static = "1.4.0"
+tauri-plugin-fs-watch = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
+
+
+[features]
+# by default Tauri runs in production mode
+# when `tauri dev` runs it is executed with `cargo run --no-default-features` if `devPath` is an URL
+default = ["custom-protocol"]
+# Add devtools to the Tauri runtime
+devtools = ["tauri/devtools"]
+# this feature is used used for production builds where `devPath` points to the filesystem
+# DO NOT remove this
+custom-protocol = ["tauri/custom-protocol"]

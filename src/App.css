@@ -1,0 +1,38 @@
+.logo {
+  padding: 1.5em !important;
+}
+
+span.logos > a > span {
+  overflow: inherit !important;
+}
+
+.logo.next:hover {
+  filter: drop-shadow(0 0 2em #36373f);
+}
+
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafb);
+}
+
+@media (prefers-color-scheme: dark) {
+  .logo.next:hover {
+    filter: drop-shadow(0 0 2em #ffff);
+  }
+}
+
+.input-empty {
+  background-color: #0f0f0f!important;
+  border:none !important;
+
+}
+.input-empty:hover {
+  background-color: #0f0f0f!important;
+}
+
+.input-filled {
+  background-color: #15803d !important;
+  border: none !important;
+  color: #fff !important;
+  cursor: pointer;
+}
+
