@@ -11,7 +11,7 @@ You will receive this file when you install the program. It will be located in t
 # 2 Installing and setting configuration
 To use the File Organizer application, follow these steps:
 
-1. Download the installer from the following link: _.
+1. Download the installer from the following link: https://github.com/juhamikael/FileOrganizer/releases/tag/beta
 2. Install the application.
 3. Run the application.
 4. While you can use it straight away, it is recommended to modify the configuration file to your liking.
