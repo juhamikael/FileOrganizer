@@ -92,10 +92,13 @@ This application is still in developement and therefore there might be bugs.
 You do test this application with you'r own responsibility and therefore I'm not responsible for any lost files
 
 
-- **Known Issues:** Not known issues
-- **Reporting Bugs:** [Open Issue](https://github.com/juhamikael/FileOrganizer/issues)
-- **Bug Fixes:** Fixes will be made available as soon as possible.
-- **Contributing:** If you're interested in contributing to develop this application, you can contribute by forking the repository on GitHub and submitting a pull request with your changes. 
+### Current known issues:
+- In some cases when editing config file: `You do not have permission to open this file. See the owner of the file or an administrator to obtain permission.`
+
+### Reporting Bugs: [Open Issue](https://github.com/juhamikael/FileOrganizer/issues)
+### Bug Fixes: Fixes will be made available as soon as possible.
+### Contributing: 
+- If you're interested in contributing to develop this application, you can contribute by forking the repository on GitHub and submitting a pull request with your changes. 
 
 # 5 Release Notes:
 ## Version 0.9.0:
