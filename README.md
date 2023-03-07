@@ -18,7 +18,7 @@ To use the File Organizer application, follow these steps:
 5. Configure the folder structure by opening the side panel.
 6. You can use any text editor for this.
 
-![Untitled scene (2)](https://user-images.githubusercontent.com/83360104/222018052-c13f77d1-1816-4f5e-be06-a11e1a683a14.png)  
+![Screenshot 2023-03-07 033732](https://user-images.githubusercontent.com/83360104/223297027-76848ed3-4fa4-49ba-ab1d-8a9f5b866bc4.jpg)
 ![image](https://user-images.githubusercontent.com/83360104/222017811-64f6af5e-66f5-4bba-809b-5475a0d52d33.png)
 
 ---
