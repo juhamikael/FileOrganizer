@@ -12,42 +12,100 @@ use std::path::{Path, PathBuf};
 use zip::write::{FileOptions, ZipWriter};
 
 /// Organizes files in the specified path by creating folders based on the file types
-/// specified in `file_map-config.json`, and moving files to their respective folders.
+/// specified in the configuration file `file_map-config.json`, and moving files to their
+/// respective folders.
 ///
 /// # Arguments
 ///
-/// * path - A string slice that holds the path to organize files in.
-/// * is_backup - A boolean value that indicates whether or not to create a backup of the files before organizing.
+/// * `path` - A string slice that holds the path to organize files in.
+/// * `is_backup` - A boolean value that indicates whether or not to create a backup of the
+///                 files before organizing.
 ///
 /// # Returns
-/// A string that represents the result of the operation, which could be an error message or a success message.
+///
+/// A string that represents the result of the operation, which could be an error message or a
+/// success message.
+///
+/// # Errors
+///
+/// Returns an error message in the following cases:
+///
+/// * If the specified path is the Windows directory (`C:\Windows`).
+/// * If the specified path is invalid.
+/// * If an error occurs during the creation of backup or folders.
+///
 /// # Example
+///
 /// ```
 /// use file_organizer::organize_files;
 ///
 /// let path = "/home/user/Downloads";
 /// let is_backup = true;
 /// let result = organize_files(path, is_backup);
-/// println!("{}", result); ///
+/// println!("{}", result);
 /// ```
 ///
+/// The `organize_files` function first checks if the specified path is valid and not the
+/// Windows directory. If the `is_backup` flag is set to `true`, it creates a backup of the
+/// files in the specified path. It then creates folders based on the file types specified
+/// in the `file_map-config.json` configuration file and moves the files to their respective
+/// folders. Finally, it removes any empty folders and returns a success message with the
+/// number of files organized, or an error message if an error occurs.
+///
+/// This function depends on the following functions:
+///
+/// * `create_backup` - Creates a backup of the files in the specified path.
+/// * `create_folders` - Creates folders based on the file types specified in the
+///                      `file_map-config.json` configuration file.
+/// * `move_files_to_new_folders` - Moves files to their respective folders based on the file
+///                                 types.
+/// * `remove_empty_folders` - Removes any empty folders in the specified path.
+///
+/// See the documentation for each of these functions for more information.
+///
+/// # Configuration File
+///
+/// The `file_map-config.json` configuration file specifies the file types and their
+/// corresponding folder names. It should be a JSON file with the following format:
+///
+/// ```json
+/// {
+///     "file_type_1": "folder_name_1",
+///     "file_type_2": "folder_name_2",
+///     ...
+/// }
+/// ```
+///
+/// The `file_type` and `folder_name` fields should be replaced with the actual file type and
+/// folder name, respectively. Each file type should be a string representing the file extension
+/// (e.g. "pdf", "docx", "jpg", etc.), and each folder name should be a string representing the
+/// name of the folder to create for that file type (e.g. "Documents", "Images", etc.).
 #[tauri::command]
 fn organize_files(path: &str, is_backup: bool) -> String {
     if path.to_lowercase() == "c:\\windows" {
         return "Error: Cannot organize files in the Windows directory.".to_string();
     }
+
+    let mut valid_path = false;
     for drive in get_available_drives() {
         if path.to_lowercase().starts_with(&drive.to_lowercase()) {
-            if is_backup == true {
-                create_backup(path);
-            }
-            create_folders(path);
-            let num_files_organized = move_files_to_new_folders(path);
-            remove_empty_folders(path);
-            return end_message(num_files_organized);
+            valid_path = true;
+            break;
         }
     }
-    "Error: Invalid path.".to_string()
+
+    if !valid_path {
+        return "Error: Invalid path.".to_string();
+    }
+
+    if is_backup {
+        create_backup(path);
+    }
+
+    create_folders(path);
+    let num_files_organized = move_files_to_new_folders(path);
+    remove_empty_folders(path);
+    end_message(num_files_organized)
 }
 
 /// Returns a vector of available drives on the Windows operating system.
