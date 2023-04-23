@@ -156,17 +156,24 @@ fn get_available_drives() -> Vec<String> {
 /// let path = "/home/user/Downloads";
 /// create_folders(path);
 /// ```
+
 fn create_folders(path: &str) {
-    let file_map_file = fs::File::open("file_map-config.json").unwrap();
+    let config_path = get_config_path();
+
+    let file_map_file = fs::File::open(config_path).unwrap();
+
     let reader = BufReader::new(file_map_file);
     let file_map_data: serde_json::Value = serde_json::from_reader(reader).unwrap();
     let file_types = file_map_data.as_object().unwrap();
 
     // Get folder names
-    let folders = file_types
+    let mut folders = file_types
         .keys()
         .map(|key| key.to_string())
         .collect::<Vec<String>>();
+
+    // Add "Miscellaneous" folder to the list of folders
+    folders.push("Miscellaneous".to_string());
 
     // Create folders
     for folder_name in &folders {
@@ -191,8 +198,10 @@ fn create_folders(path: &str) {
 /// println!("{} files moved to new folders", num_files_moved);
 /// ```
 fn move_files_to_new_folders(path: &str) -> usize {
+    let config_path = get_config_path();
+
     let mut file_categories: HashMap<String, Vec<String>> = HashMap::new();
-    let file_map = fs::File::open("file_map-config.json").unwrap();
+    let file_map = fs::File::open(config_path).unwrap();
     let reader = BufReader::new(file_map);
     let json: serde_json::Value = serde_json::from_reader(reader).unwrap();
 
@@ -200,12 +209,7 @@ fn move_files_to_new_folders(path: &str) -> usize {
     let (folders, extensions) = get_folder_and_extension_lists(&json);
 
     // Categorize files
-    let num_files_moved = categorize_files(
-        &mut file_categories,
-        &folders,
-        &extensions,
-        path,
-    );
+    let num_files_moved = categorize_files(&mut file_categories, &folders, &extensions, path);
 
     // And move files to folders
     move_files_to_folders(&file_categories, path);
@@ -231,7 +235,9 @@ fn move_files_to_new_folders(path: &str) -> usize {
 /// assert_eq!(folder_names, vec!["Images", "Videos"]);
 /// assert_eq!(file_extensions, vec![vec![".jpg", ".png", ".gif"], vec![".mp4", ".mov", ".avi"]]);
 /// ```
-fn get_folder_and_extension_lists(file_map_data: &serde_json::Value) -> (Vec<String>, Vec<Vec<String>>) {
+fn get_folder_and_extension_lists(
+    file_map_data: &serde_json::Value,
+) -> (Vec<String>, Vec<Vec<String>>) {
     let folder_names = file_map_data
         .as_object()
         .unwrap()
@@ -276,10 +282,12 @@ fn get_folder_and_extension_lists(file_map_data: &serde_json::Value) -> (Vec<Str
 /// let num_files_categorized = categorize_files(&mut categorized_files, &folder_names, &file_extensions, "/path/to/directory");
 /// println!("{} files categorized", num_files_categorized);
 /// ```
-fn categorize_files(file_categories: &mut HashMap<String, Vec<String>>,
-                    folder_names: &Vec<String>,
-                    file_extensions: &Vec<Vec<String>>,
-                    path: &str, ) -> usize {
+fn categorize_files(
+    file_categories: &mut HashMap<String, Vec<String>>,
+    folder_names: &Vec<String>,
+    file_extensions: &Vec<Vec<String>>,
+    path: &str,
+) -> usize {
     let mut num_files_categorized = 0;
 
     let dir_contents = fs::read_dir(path).unwrap();
@@ -328,13 +336,17 @@ fn categorize_files(file_categories: &mut HashMap<String, Vec<String>>,
 /// assert_eq!(get_folder_name(".jpg", &folder_names, &file_extensions), "Images");
 /// assert_eq!(get_folder_name(".doc", &folder_names, &file_extensions), "Uncategorized");
 /// ```
-fn get_folder_name(file_extension: &str, folder_names: &Vec<String>, file_extensions: &Vec<Vec<String>>) -> String {
+fn get_folder_name(
+    file_extension: &str,
+    folder_names: &Vec<String>,
+    file_extensions: &Vec<Vec<String>>,
+) -> String {
     for (i, extensions) in file_extensions.iter().enumerate() {
         if extensions.iter().any(|ext| ext == file_extension) {
             return folder_names[i].clone();
         }
     }
-    "Uncategorized".to_string()
+    "Miscellaneous".to_string() // Return "Miscellaneous" for any unmatched file extension
 }
 
 /// Given a hashmap containing the categorized files and the path to a directory, moves the files
@@ -387,12 +399,20 @@ fn end_message(num_files_organized: usize) -> String {
 /// If the config file cannot be opened, an error message will be printed to the console.
 #[tauri::command]
 fn open_config_file() -> String {
-    let config_path = PathBuf::from("file_map-config.json");
-    if let Err(_e) = open::that(config_path) {
+    let user_dirs = match UserDirs::new() {
+        Some(user_dirs) => user_dirs,
+        None => return "Error: Could not find user directories".to_string(),
+    };
+    let documents_path = user_dirs
+        .document_dir()
+        .expect("Error: Could not find Documents directory");
+    let config_path = documents_path.join("FileOrganizer/file_map-config.json");
+
+    if let Err(_e) = open::that(&config_path) {
         return "Error: Could not open config file".to_string();
     }
 
-    "Success:Opened config file".to_string()
+    config_path.to_string_lossy().into_owned()
 }
 
 /// Recursively removes all empty folders in the specified directory.
@@ -434,13 +454,13 @@ fn time_now() -> String {
 ///
 /// * `path` - A `&str` representing the path of the directory to create a backup of.
 fn create_backup(path: &str) {
-    let backup_path = format!("{}/backup", path);
+    let backup_path = format!("{}/Backup", path);
     let backup_folder = Path::new(&backup_path);
     if !backup_folder.exists() {
         fs::create_dir(&backup_folder).unwrap();
     }
 
-    let zip_path = format!("{}/backup-{}.zip", backup_path, time_now());
+    let zip_path = format!("{}/Backup-{}.zip", backup_path, time_now());
     let zip_file = fs::File::create(&zip_path).unwrap();
     let mut zip_writer = ZipWriter::new(zip_file);
 
@@ -462,13 +482,46 @@ fn create_backup(path: &str) {
     zip_writer.finish().unwrap();
 }
 
+/// Returns the path to the configuration file used by the file organizer program.
+///
+/// The configuration file is located in the "FileOrganizer" subdirectory of the current user's
+/// "Documents" folder and is named "file_map-config.json".
+///
+/// # Returns
+///
+/// A `PathBuf` object representing the path to the configuration file.
+fn get_config_path() -> PathBuf {
+    let user_documents_folder = format!("C:\\Users\\{}\\Documents", whoami::username());
+    let file_organizer_folder = Path::new(&user_documents_folder).join("FileOrganizer");
+    let config_file_destination = file_organizer_folder.join("file_map-config.json");
+    config_file_destination
+}
 
+/// The main function of the File Organizer program.
+///
+/// This function creates a folder named "FileOrganizer" in the user's Documents folder, and copies
+/// the "file_map-config.json" file to this folder if it doesn't already exist. It then initializes
+/// and runs a Tauri application, with the organize_files and open_config_file commands as the
+/// available endpoints.
+///
 fn main() {
+    let user_documents_folder = format!("C:\\Users\\{}\\Documents", whoami::username());
+    let file_organizer_folder = Path::new(&user_documents_folder).join("FileOrganizer");
+    let config_file_destination = file_organizer_folder.join("file_map-config.json");
+
+    // Create the FileOrganizer folder if it doesn't exist
+    if !file_organizer_folder.exists() {
+        create_dir_all(&file_organizer_folder).expect("Failed to create FileOrganizer folder");
+    }
+
+    // Copy the file_map-config.json file to the FileOrganizer folder if it doesn't exist
+    if !config_file_destination.exists() {
+        copy("file_map-config.json", &config_file_destination)
+            .expect("Failed to copy file_map-config.json");
+    }
+
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![
-            organize_files,
-            open_config_file,
-        ])
+        .invoke_handler(tauri::generate_handler![organize_files, open_config_file,])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
