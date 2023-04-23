@@ -11,7 +11,7 @@ You will receive this file when you install the program. It will be located in t
 # 2 Installing and setting configuration
 To use the File Organizer application, follow these steps:
 
-1. Download the installer from the following link: https://github.com/juhamikael/FileOrganizer/releases/tag/beta
+1. Download the installer from the following link: https://github.com/juhamikael/FileOrganizer/releases
 2. Install the application.
 3. Run the application.
 4. While you can use it straight away, it is recommended to modify the configuration file to your liking.
@@ -38,12 +38,11 @@ An example of how the configuration file should look like:
   "Excel": ["xlsx", "csv", "xlsm", "xls"],
   "Sound Banks & Presets": ["fxp", "nmsv", "spf", "fxb"],
   "PDF": ["pdf"],
-  "Misc": []
+
 }
 ```
-> # IMPORTANT! Do not remove "Misc": [].
-> - If a file extension is not listed in the configuration file, it will be moved to a folder named "Misc". 
-> - If "Misc" does not exist, the remaining files will not be moved.
+> ## If a file extension is not listed in the configuration file, it will be moved to a folder named "Miscellaneous". 
+
 
 
 ### You can edit fields, delete fields, and add new fields to your liking. 
@@ -93,7 +92,7 @@ You do test this application with you'r own responsibility and therefore I'm not
 
 
 ### Current known issues:
-- In some cases when editing config file: `You do not have permission to open this file. See the owner of the file or an administrator to obtain permission.`
+- Not known
 
 ### Reporting Bugs: [Open Issue](https://github.com/juhamikael/FileOrganizer/issues)
 ### Bug Fixes: Fixes will be made available as soon as possible.
@@ -102,9 +101,19 @@ You do test this application with you'r own responsibility and therefore I'm not
 
 # 5 Release Notes:
 ## Version 0.9.0:
-This is the first beta release of the application, so please expect some bugs and issues. If you encounter any problems, please report them by opening an issue on GitHub. I will review all bug reports and work to fix any issues as soon as possible.
+This is the first beta release of the application, expect some bugs and issues. If you encounter any problems, please report them by opening an issue on GitHub. I will review all bug reports and work to fix any issues as soon as possible.
 - Initial beta release of the application 
 
+## Version 0.9.1:
+This is the #2 release of the application, expect some bugs and issues. If you encounter any problems, please report them by opening an issue on GitHub. I will review all bug reports and work to fix any issues as soon as possible.
+- Fixes to [Cannot save edited config file #1](https://github.com/juhamikael/FileOrganizer/issues/1)
+  * Updates to reading config file
+    * Save and read file extension JSON from <username>/documents/FileOrganizer + small changes
+    * New dependencies
+    * New "imports"
+    * Update file_map-config.json
+  * Update icons
+  * + some small updates to code
 
 # 6 Contact: 
 Join my [Discord channel](https://discord.gg/cxp7EKw53w)
