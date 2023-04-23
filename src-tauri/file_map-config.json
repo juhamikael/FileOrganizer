@@ -1,13 +1,26 @@
 {
-  "Docs": ["docx", "odt", "rtf", "txt", "ods", "pptx", "dotx", "doc", "ppt"],
-  "Photos": ["jpg", "png", "jpeg", "ico", "jfif", "psd", "gif"],
+  "Docs": [
+    "docx",
+    "md",
+    "odt",
+    "rtf",
+    "txt",
+    "ods",
+    "pptx",
+    "dotx",
+    "doc",
+    "ppt"
+  ],
+  "Photos": ["jpg", "png", "jpeg", "ico", "jfif", "psd", "gif", "svg", "avif"],
   "Music": ["mp3", "wav", "aac", "ogg", "aif", "m4a"],
+  "Data": ["json", "xml", "mxl"],
+  "Code": ["htm", "html", "js", "ts", "tsx", "jsx", "css", "ipynb", "py"],
   "Installers": ["exe", "msi"],
   "Zip files": ["zip", "rar", "gz", "7z"],
-  "Music Production": ["flp", "fst", "als", "midi", "mid"],
-  "Video": ["mp4", "gif", "mpeg", "mkv"],
+  "Music Production": ["flp", "fst", "als", "midi", "mid", "asd"],
+  "Video": ["mp4", "gif", "mpeg", "mkv", "m4v"],
   "Excel": ["xlsx", "csv", "xlsm", "xls"],
   "Sound Banks & Presets": ["fxp", "nmsv", "spf", "fxb"],
   "PDF": ["pdf"],
-  "Misc": []
+  "Shortcuts": ["shortcut"]
 }
