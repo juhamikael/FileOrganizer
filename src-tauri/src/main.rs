@@ -1,53 +1,114 @@
 #![cfg_attr(
-all(not(debug_assertions), target_os = "windows"),
-windows_subsystem = "windows"
+    all(not(debug_assertions), target_os = "windows"),
+    windows_subsystem = "windows"
 )]
 
 use chrono::Local;
+use directories::UserDirs;
 use std::collections::HashMap;
+use std::env;
 use std::fs;
+use std::fs::{copy, create_dir_all};
 use std::io::BufReader;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use zip::write::{FileOptions, ZipWriter};
 
 /// Organizes files in the specified path by creating folders based on the file types
-/// specified in `file_map-config.json`, and moving files to their respective folders.
+/// specified in the configuration file `file_map-config.json`, and moving files to their
+/// respective folders.
 ///
 /// # Arguments
 ///
-/// * path - A string slice that holds the path to organize files in.
-/// * is_backup - A boolean value that indicates whether or not to create a backup of the files before organizing.
+/// * `path` - A string slice that holds the path to organize files in.
+/// * `is_backup` - A boolean value that indicates whether or not to create a backup of the
+///                 files before organizing.
 ///
 /// # Returns
-/// A string that represents the result of the operation, which could be an error message or a success message.
+///
+/// A string that represents the result of the operation, which could be an error message or a
+/// success message.
+///
+/// # Errors
+///
+/// Returns an error message in the following cases:
+///
+/// * If the specified path is the Windows directory (`C:\Windows`).
+/// * If the specified path is invalid.
+/// * If an error occurs during the creation of backup or folders.
+///
 /// # Example
+///
 /// ```
 /// use file_organizer::organize_files;
 ///
 /// let path = "/home/user/Downloads";
 /// let is_backup = true;
 /// let result = organize_files(path, is_backup);
-/// println!("{}", result); ///
+/// println!("{}", result);
 /// ```
 ///
+/// The `organize_files` function first checks if the specified path is valid and not the
+/// Windows directory. If the `is_backup` flag is set to `true`, it creates a backup of the
+/// files in the specified path. It then creates folders based on the file types specified
+/// in the `file_map-config.json` configuration file and moves the files to their respective
+/// folders. Finally, it removes any empty folders and returns a success message with the
+/// number of files organized, or an error message if an error occurs.
+///
+/// This function depends on the following functions:
+///
+/// * `create_backup` - Creates a backup of the files in the specified path.
+/// * `create_folders` - Creates folders based on the file types specified in the
+///                      `file_map-config.json` configuration file.
+/// * `move_files_to_new_folders` - Moves files to their respective folders based on the file
+///                                 types.
+/// * `remove_empty_folders` - Removes any empty folders in the specified path.
+///
+/// See the documentation for each of these functions for more information.
+///
+/// # Configuration File
+///
+/// The `file_map-config.json` configuration file specifies the file types and their
+/// corresponding folder names. It should be a JSON file with the following format:
+///
+/// ```json
+/// {
+///     "file_type_1": "folder_name_1",
+///     "file_type_2": "folder_name_2",
+///     ...
+/// }
+/// ```
+///
+/// The `file_type` and `folder_name` fields should be replaced with the actual file type and
+/// folder name, respectively. Each file type should be a string representing the file extension
+/// (e.g. "pdf", "docx", "jpg", etc.), and each folder name should be a string representing the
+/// name of the folder to create for that file type (e.g. "Documents", "Images", etc.).
 #[tauri::command]
 fn organize_files(path: &str, is_backup: bool) -> String {
     if path.to_lowercase() == "c:\\windows" {
         return "Error: Cannot organize files in the Windows directory.".to_string();
     }
+
+    let mut valid_path = false;
     for drive in get_available_drives() {
         if path.to_lowercase().starts_with(&drive.to_lowercase()) {
-            if is_backup == true {
-                create_backup(path);
-            }
-            create_folders(path);
-            let num_files_organized = move_files_to_new_folders(path);
-            remove_empty_folders(path);
-            return end_message(num_files_organized);
+            valid_path = true;
+            break;
         }
     }
-    "Error: Invalid path.".to_string()
+
+    if !valid_path {
+        return "Error: Invalid path.".to_string();
+    }
+
+    if is_backup {
+        create_backup(path);
+    }
+
+    create_folders(path);
+    let num_files_organized = move_files_to_new_folders(path);
+    remove_empty_folders(path);
+    end_message(num_files_organized)
 }
 
 /// Returns a vector of available drives on the Windows operating system.
@@ -95,17 +156,24 @@ fn get_available_drives() -> Vec<String> {
 /// let path = "/home/user/Downloads";
 /// create_folders(path);
 /// ```
+
 fn create_folders(path: &str) {
-    let file_map_file = fs::File::open("file_map-config.json").unwrap();
+    let config_path = get_config_path();
+
+    let file_map_file = fs::File::open(config_path).unwrap();
+
     let reader = BufReader::new(file_map_file);
     let file_map_data: serde_json::Value = serde_json::from_reader(reader).unwrap();
     let file_types = file_map_data.as_object().unwrap();
 
     // Get folder names
-    let folders = file_types
+    let mut folders = file_types
         .keys()
         .map(|key| key.to_string())
         .collect::<Vec<String>>();
+
+    // Add "Miscellaneous" folder to the list of folders
+    folders.push("Miscellaneous".to_string());
 
     // Create folders
     for folder_name in &folders {
@@ -130,8 +198,10 @@ fn create_folders(path: &str) {
 /// println!("{} files moved to new folders", num_files_moved);
 /// ```
 fn move_files_to_new_folders(path: &str) -> usize {
+    let config_path = get_config_path();
+
     let mut file_categories: HashMap<String, Vec<String>> = HashMap::new();
-    let file_map = fs::File::open("file_map-config.json").unwrap();
+    let file_map = fs::File::open(config_path).unwrap();
     let reader = BufReader::new(file_map);
     let json: serde_json::Value = serde_json::from_reader(reader).unwrap();
 
@@ -139,12 +209,7 @@ fn move_files_to_new_folders(path: &str) -> usize {
     let (folders, extensions) = get_folder_and_extension_lists(&json);
 
     // Categorize files
-    let num_files_moved = categorize_files(
-        &mut file_categories,
-        &folders,
-        &extensions,
-        path,
-    );
+    let num_files_moved = categorize_files(&mut file_categories, &folders, &extensions, path);
 
     // And move files to folders
     move_files_to_folders(&file_categories, path);
@@ -170,7 +235,9 @@ fn move_files_to_new_folders(path: &str) -> usize {
 /// assert_eq!(folder_names, vec!["Images", "Videos"]);
 /// assert_eq!(file_extensions, vec![vec![".jpg", ".png", ".gif"], vec![".mp4", ".mov", ".avi"]]);
 /// ```
-fn get_folder_and_extension_lists(file_map_data: &serde_json::Value) -> (Vec<String>, Vec<Vec<String>>) {
+fn get_folder_and_extension_lists(
+    file_map_data: &serde_json::Value,
+) -> (Vec<String>, Vec<Vec<String>>) {
     let folder_names = file_map_data
         .as_object()
         .unwrap()
@@ -215,10 +282,12 @@ fn get_folder_and_extension_lists(file_map_data: &serde_json::Value) -> (Vec<Str
 /// let num_files_categorized = categorize_files(&mut categorized_files, &folder_names, &file_extensions, "/path/to/directory");
 /// println!("{} files categorized", num_files_categorized);
 /// ```
-fn categorize_files(file_categories: &mut HashMap<String, Vec<String>>,
-                    folder_names: &Vec<String>,
-                    file_extensions: &Vec<Vec<String>>,
-                    path: &str, ) -> usize {
+fn categorize_files(
+    file_categories: &mut HashMap<String, Vec<String>>,
+    folder_names: &Vec<String>,
+    file_extensions: &Vec<Vec<String>>,
+    path: &str,
+) -> usize {
     let mut num_files_categorized = 0;
 
     let dir_contents = fs::read_dir(path).unwrap();
@@ -267,13 +336,17 @@ fn categorize_files(file_categories: &mut HashMap<String, Vec<String>>,
 /// assert_eq!(get_folder_name(".jpg", &folder_names, &file_extensions), "Images");
 /// assert_eq!(get_folder_name(".doc", &folder_names, &file_extensions), "Uncategorized");
 /// ```
-fn get_folder_name(file_extension: &str, folder_names: &Vec<String>, file_extensions: &Vec<Vec<String>>) -> String {
+fn get_folder_name(
+    file_extension: &str,
+    folder_names: &Vec<String>,
+    file_extensions: &Vec<Vec<String>>,
+) -> String {
     for (i, extensions) in file_extensions.iter().enumerate() {
         if extensions.iter().any(|ext| ext == file_extension) {
             return folder_names[i].clone();
         }
     }
-    "Uncategorized".to_string()
+    "Miscellaneous".to_string() // Return "Miscellaneous" for any unmatched file extension
 }
 
 /// Given a hashmap containing the categorized files and the path to a directory, moves the files
@@ -326,12 +399,20 @@ fn end_message(num_files_organized: usize) -> String {
 /// If the config file cannot be opened, an error message will be printed to the console.
 #[tauri::command]
 fn open_config_file() -> String {
-    let config_path = PathBuf::from("file_map-config.json");
-    if let Err(_e) = open::that(config_path) {
+    let user_dirs = match UserDirs::new() {
+        Some(user_dirs) => user_dirs,
+        None => return "Error: Could not find user directories".to_string(),
+    };
+    let documents_path = user_dirs
+        .document_dir()
+        .expect("Error: Could not find Documents directory");
+    let config_path = documents_path.join("FileOrganizer/file_map-config.json");
+
+    if let Err(_e) = open::that(&config_path) {
         return "Error: Could not open config file".to_string();
     }
 
-    "Success:Opened config file".to_string()
+    config_path.to_string_lossy().into_owned()
 }
 
 /// Recursively removes all empty folders in the specified directory.
@@ -373,13 +454,13 @@ fn time_now() -> String {
 ///
 /// * `path` - A `&str` representing the path of the directory to create a backup of.
 fn create_backup(path: &str) {
-    let backup_path = format!("{}/backup", path);
+    let backup_path = format!("{}/Backup", path);
     let backup_folder = Path::new(&backup_path);
     if !backup_folder.exists() {
         fs::create_dir(&backup_folder).unwrap();
     }
 
-    let zip_path = format!("{}/backup-{}.zip", backup_path, time_now());
+    let zip_path = format!("{}/Backup-{}.zip", backup_path, time_now());
     let zip_file = fs::File::create(&zip_path).unwrap();
     let mut zip_writer = ZipWriter::new(zip_file);
 
@@ -401,13 +482,46 @@ fn create_backup(path: &str) {
     zip_writer.finish().unwrap();
 }
 
+/// Returns the path to the configuration file used by the file organizer program.
+///
+/// The configuration file is located in the "FileOrganizer" subdirectory of the current user's
+/// "Documents" folder and is named "file_map-config.json".
+///
+/// # Returns
+///
+/// A `PathBuf` object representing the path to the configuration file.
+fn get_config_path() -> PathBuf {
+    let user_documents_folder = format!("C:\\Users\\{}\\Documents", whoami::username());
+    let file_organizer_folder = Path::new(&user_documents_folder).join("FileOrganizer");
+    let config_file_destination = file_organizer_folder.join("file_map-config.json");
+    config_file_destination
+}
 
+/// The main function of the File Organizer program.
+///
+/// This function creates a folder named "FileOrganizer" in the user's Documents folder, and copies
+/// the "file_map-config.json" file to this folder if it doesn't already exist. It then initializes
+/// and runs a Tauri application, with the organize_files and open_config_file commands as the
+/// available endpoints.
+///
 fn main() {
+    let user_documents_folder = format!("C:\\Users\\{}\\Documents", whoami::username());
+    let file_organizer_folder = Path::new(&user_documents_folder).join("FileOrganizer");
+    let config_file_destination = file_organizer_folder.join("file_map-config.json");
+
+    // Create the FileOrganizer folder if it doesn't exist
+    if !file_organizer_folder.exists() {
+        create_dir_all(&file_organizer_folder).expect("Failed to create FileOrganizer folder");
+    }
+
+    // Copy the file_map-config.json file to the FileOrganizer folder if it doesn't exist
+    if !config_file_destination.exists() {
+        copy("file_map-config.json", &config_file_destination)
+            .expect("Failed to copy file_map-config.json");
+    }
+
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![
-            organize_files,
-            open_config_file,
-        ])
+        .invoke_handler(tauri::generate_handler![organize_files, open_config_file,])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
