@@ -106,14 +106,14 @@ This is the first beta release of the application, expect some bugs and issues. 
 
 ## Version 0.9.1:
 This is the #2 release of the application, expect some bugs and issues. If you encounter any problems, please report them by opening an issue on GitHub. I will review all bug reports and work to fix any issues as soon as possible.
-- Fixes to [Cannot save edited config file #1](https://github.com/juhamikael/FileOrganizer/issues/1)
+* Fixes to [Cannot save edited config file #1](https://github.com/juhamikael/FileOrganizer/issues/1)
   * Updates to reading config file
-    * Save and read file extension JSON from <username>/documents/FileOrganizer + small changes
-    * New dependencies
-    * New "imports"
-    * Update file_map-config.json
-  * Update icons
-  * + some small updates to code
+  * Save and read file extension JSON from <username>/documents/FileOrganizer + small changes
+  * New dependencies
+  * New "imports"
+  * Update file_map-config.json
+ * Update icons
+ * & some small updates to code
 
 # 6 Contact: 
 Join my [Discord channel](https://discord.gg/cxp7EKw53w)
