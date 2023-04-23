@@ -1,11 +1,14 @@
 #![cfg_attr(
-all(not(debug_assertions), target_os = "windows"),
-windows_subsystem = "windows"
+    all(not(debug_assertions), target_os = "windows"),
+    windows_subsystem = "windows"
 )]
 
 use chrono::Local;
+use directories::UserDirs;
 use std::collections::HashMap;
+use std::env;
 use std::fs;
+use std::fs::{copy, create_dir_all};
 use std::io::BufReader;
 use std::io::Write;
 use std::path::{Path, PathBuf};
