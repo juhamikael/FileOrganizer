@@ -1,10 +1,10 @@
-import {MdClose} from "react-icons/md";
-import {useEffect, useState} from "react";
-import {notify} from "../utils/Toastify";
-import {invoke} from "@tauri-apps/api/tauri";
-import {Switch} from "@material-tailwind/react";
-import {Link} from "react-router-dom";
-import styles from "./Styles"
+import { useEffect, useState } from "react";
+import { notify } from "../utils/Toastify";
+import { invoke } from "@tauri-apps/api/tauri";
+import { Switch } from "@material-tailwind/react";
+import { Link } from "react-router-dom";
+import styles from "./Styles";
+import { Icon } from "@iconify/react";
 
 interface SidePanelProps {
   backupState: boolean;
@@ -13,7 +13,12 @@ interface SidePanelProps {
   setBackUpStatus: (status: boolean) => void;
 }
 
-function SidePanel({isOpen, onClose, backupState, setBackUpStatus}: SidePanelProps,) {
+function SidePanel({
+  isOpen,
+  onClose,
+  backupState,
+  setBackUpStatus,
+}: SidePanelProps) {
   const [openConfigMsg, setOpenConfigMsg] = useState("");
   const [switchState, setSwitchState] = useState(false);
   useEffect(() => {
@@ -31,7 +36,7 @@ function SidePanel({isOpen, onClose, backupState, setBackUpStatus}: SidePanelPro
   const onChangeHandler = async () => {
     setBackUpStatus(!switchState);
     await setSwitchState(!switchState);
-    console.log(!backupState)
+    console.log(!backupState);
   };
 
   useEffect(() => {
@@ -67,18 +72,18 @@ function SidePanel({isOpen, onClose, backupState, setBackUpStatus}: SidePanelPro
 
         <div className="ml-5 flex font-montserrat font-medium space-y-4">
           <div className="flex flex-row mx-5 ">
-            <Switch onChange={onChangeHandler} checked={switchState}/>
+            <Switch onChange={onChangeHandler} checked={switchState} />
             <p className="text-white mx-4">Enable Backup</p>
           </div>
         </div>
         <div className="ml-6 flex flex-row place-items-center font-montserrat font-bold"></div>
         <div className="mt-5 fixed bottom-0">
           <button
-            className="mb-4 ml-4 w-fit right-0 rounded-md border-transparent py-2 px-4 hover:border-red-500
-            text-sm font-medium text-gray-700 transition duration-150 ease-in-out shadow-sm"
+            className="mb-4 ml-4 w-fit right-0 rounded-md border-transparent py-2 px-4 hover:border-red-500 hover:border-0 border-0
+            text-sm font-medium text-white transition duration-150 ease-in-out shadow-sm hover:text-red-500 hover:scale-125 "
             onClick={onClose}
           >
-            <MdClose size={20} className="text-red-500"/>
+            <Icon icon="solar:close-square-broken" className=" text-2xl" />
           </button>
         </div>
       </div>

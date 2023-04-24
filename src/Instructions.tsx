@@ -1,9 +1,8 @@
-import {useState} from "react";
-import {MdArrowBack} from "react-icons/md";
-import {Link} from "react-router-dom";
-import {GoChevronDown, GoChevronRight} from "react-icons/go";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import MadeBy from "./components/MadeBy";
-
+import { Icon } from "@iconify/react";
+import "./styles/instruction.css";
 const Instructions = () => {
   const [isEditingOpen, setIsEditingOpen] = useState(false);
   const [isRunningOpen, setIsRunningOpen] = useState(false);
@@ -19,23 +18,32 @@ const Instructions = () => {
   };
 
   return (
-    <div className="mx-4 font-montserrat" style={{height: "400px"}}>
+    <div className="mx-4 font-montserrat" style={{ height: "400px" }}>
       <div className=" flex flex-row text-xl font-bold mt-4 place-items-center">
-        <p className="text-3xl">
-          Instructions
-        </p>
+        <p className="text-3xl">Instructions</p>
         <a
           className=" ml-4 text-blue-500 text-xl"
-          href=" https://github.com/juhamikael/FileOrganizer" target="_blank">
+          href=" https://github.com/juhamikael/FileOrganizer"
+          target="_blank"
+        >
           Read more
         </a>
       </div>
       <div
-        className={`${!isEditingOpen ? "hover:text-blue-500" : "hover:text-red-500"} text-lg font-bold mt-4 cursor-pointer h-fit `}
-        onClick={toggleEditing}>
+        className={`${
+          !isEditingOpen ? "hover:text-blue-500" : "hover:text-red-500"
+        } text-lg font-bold mt-4 cursor-pointer h-fit `}
+        onClick={toggleEditing}
+      >
         <div className="flex flex-row place-items-center">
           Editing config file
-          <span className="ml-2">{isEditingOpen ? <GoChevronDown/> : <GoChevronRight/>}</span>
+          <span className="ml-2">
+            {isEditingOpen ? (
+              <Icon icon="ant-design:caret-down-outlined" />
+            ) : (
+              <Icon icon="ant-design:caret-right-outlined" />
+            )}
+          </span>
         </div>
       </div>
       {isEditingOpen && (
@@ -51,12 +59,20 @@ const Instructions = () => {
         </div>
       )}
       <div
-        className={`${!isRunningOpen ? "hover:text-blue-500" : "hover:text-red-500"} text-lg font-bold mt-4 cursor-pointer h-fit `}
-        onClick={toggleRunning}>
-
+        className={`${
+          !isRunningOpen ? "hover:text-blue-500" : "hover:text-red-500"
+        } text-lg font-bold mt-4 cursor-pointer h-fit `}
+        onClick={toggleRunning}
+      >
         <div className="flex flex-row place-items-center">
           Running the program
-          <span className="ml-2">{isRunningOpen ? <GoChevronDown/> : <GoChevronRight/>}</span>
+          <span className="ml-2">
+            {isRunningOpen ? (
+              <Icon icon="ant-design:caret-down-outlined" />
+            ) : (
+              <Icon icon="ant-design:caret-right-outlined" />
+            )}
+          </span>
         </div>
       </div>
       {isRunningOpen && (
@@ -82,18 +98,16 @@ const Instructions = () => {
       )}
       <Link
         to="/"
-        className="flex flex-row fixed bottom-0 place-items-center mb-6 text-white"
-        style={{
-          color: "white",
-        }}
+        className="flex flex-row fixed bottom-0 place-items-center mb-6 text-white hover:text-red-500 zoom "
       >
-        <MdArrowBack size={40} className="hover:text-blue-500"/>
+        <Icon
+          icon="material-symbols:arrow-circle-left-outline-rounded"
+          className="text-3xl "
+        />
       </Link>
 
-      <MadeBy/>
-
+      <MadeBy />
     </div>
-
   );
 };
 
