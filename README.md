@@ -113,7 +113,8 @@ This is the #2 release of the application, expect some bugs and issues. If you e
   * New "imports"
   * Update file_map-config.json
  * Update icons
- * & some small updates to code
+ * Removed wrong dependency "Tailwind" which caused vulnerabilities and added some new 
+ * & some small styling and other updates to code
 
 # 6 Contact: 
 Join my [Discord channel](https://discord.gg/cxp7EKw53w)
